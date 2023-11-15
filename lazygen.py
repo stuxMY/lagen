@@ -69,7 +69,6 @@ def menu():
 ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═══╝
 
     """)
-    print("® Free Palestine" )
     print("1. Single password with username")
     print("2. Bulk passwords with usernames")
     print("3. Password only")
