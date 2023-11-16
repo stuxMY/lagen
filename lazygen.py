@@ -22,7 +22,7 @@ def generate_password(length=12, uppercase=True, lowercase=True, numbers=True, s
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 
-def read_usernames_from_file(filename):
+def usernames_from_file(filename):
     try:
         with open(filename, 'r') as file:
             usernames = [line.strip() for line in file.readlines()]
@@ -43,12 +43,20 @@ def generate_bulk_passwords(usernames, length=12, uppercase=True, lowercase=True
 
     return passwords
 
-def generate_single_password(username, length=12, uppercase=True, lowercase=True, numbers=True, special_characters=True):
+def gen_single_password(username, length=12, uppercase=True, lowercase=True, numbers=True, special_characters=True):
     try:
         password = generate_password(length, uppercase, lowercase, numbers, special_characters)
         return {username: password}
     except ValueError as e:
         return {username: str(e)}
+
+def save_to_file(filename, content):
+    try:
+        with open(filename, 'w') as file:
+            file.write(content)
+        print(f"Passwords saved to '{filename}' successfully.")
+    except Exception as e:
+        print(f"Error saving to file: {str(e)}")
 
 def menu():
     print("""
@@ -67,7 +75,6 @@ def menu():
 ██║     ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║
 ███████╗██║  ██║╚██████╔╝███████╗██║ ╚████║
 ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═══╝
-
     """)
     print("1. Single password with username")
     print("2. Bulk passwords with usernames")
@@ -88,33 +95,38 @@ def main():
             break
 
         elif option == '1':
-            username = input("Enter username: ")
-            length = int(input("Enter password length: "))
-            uppercase = input("Include uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Include lowercase letters? (y/n): ").lower() == 'y'
+            username = input("Username: ")
+            length = int(input("Password length: "))
+            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
+            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
             numbers = input("Include numbers? (y/n): ").lower() == 'y'
-            special_characters = input("Include special characters? (y/n): ").lower() == 'y'
+            special_characters = input("Special characters? (y/n): ").lower() == 'y'
 
-            result = generate_single_password(username, length, uppercase, lowercase, numbers, special_characters)
+            result = gen_single_password(username, length, uppercase, lowercase, numbers, special_characters)
             print("\nPassword: ")
             for username, password in result.items():
                 print(f"{username}: {password}")
 
+            save_option = input("Save the password to file? (y/n): ").lower()
+            if save_option == 'y':
+                filename = input("Filename to be saved as: ")
+                save_to_file(filename, f"{username}: {password}")
+
         elif option == '2':
-            source_option = input("Choose method (1: Manual Entry, 2: File 'usernames.txt'): ")
+            source_option = input("Method (1: Manual Entry, 2: File 'usernames.txt'): ")
             
             if source_option == '1':
-                usernames_str = input("Enter comma-separated list of usernames (e.g., user1,user2): ")
+                usernames_str = input("Comma-separated list of usernames (e.g., user1,user2): ")
                 usernames = [username.strip() for username in usernames_str.split(',')]
             elif source_option == '2':
-                usernames = read_usernames_from_file('usernames.txt')
+                usernames = usernames_from_file('usernames.txt')
             else:
-                print("Invalid source option. choose 1 or 2.")
+                print("source option invalid . choose 1 or 2.")
                 continue
 
-            length = int(input("Enter password length: "))
-            uppercase = input("Include uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Include lowercase letters? (y/n): ").lower() == 'y'
+            length = int(input("Password length: "))
+            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
+            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
             numbers = input("Include numbers? (y/n): ").lower() == 'n'
             special_characters = input("Include special characters? (y/n): ").lower() == 'y'
 
@@ -123,10 +135,15 @@ def main():
             for username, password in bulk_passwords.items():
                 print(f"{username}: {password}")
 
+            save_option = input("Save the passwords to a file? (y/n): ").lower()
+            if save_option == 'y':
+                filename = input("Filename to be saved as: ")
+                save_to_file(filename, "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()]))
+
         elif option == '3':
-            length = int(input("Enter password length: "))
-            uppercase = input("Include uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Include lowercase letters? (y/n): ").lower() == 'y'
+            length = int(input("Password length: "))
+            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
+            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
             numbers = input("Include numbers? (y/n): ").lower() == 'y'
             special_characters = input("Include special characters? (y/n): ").lower() == 'y'
 
@@ -138,9 +155,9 @@ def main():
 
         elif option == '4':
             num_passwords = int(input("Enter total passwords to generate in bulk: "))
-            length = int(input("Enter desired password length: "))
-            uppercase = input("Include uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Include lowercase letters? (y/n): ").lower() == 'y'
+            length = int(input("Password length: "))
+            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
+            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
             numbers = input("Include numbers? (y/n): ").lower() == 'y'
             special_characters = input("Include special characters? (y/n): ").lower() == 'y'
 
@@ -148,6 +165,11 @@ def main():
             print("\nPasswords: ")
             for username, password in bulk_passwords.items():
                 print(f"{username}: {password}")
+
+            save_option = input("Save the passwords to a file? (y/n): ").lower()
+            if save_option == 'y':
+                filename = input("Enter the filename: ")
+                save_to_file(filename, "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()]))
 
         elif option == '5':
             data = input("Enter data for MD5 hashing: ")
@@ -177,31 +199,19 @@ def main():
             print("1. HS256 (HMAC using SHA-256)")
             print("2. HS384 (HMAC using SHA-384)")
             print("3. HS512 (HMAC using SHA-512)")
-            #print("4. RS256 (RSA using SHA-256)")#same issue
-            #print("5. RS384 (RSA using SHA-384)")#
-            #print("6. RS512 (RSA using SHA-512)")##
-            #print("7. ES256 (ECDSA using P-256 and SHA-256)") #got issue on this
-            #print("8. ES384 (ECDSA using P-384 and SHA-384)")##
-            #print("9. ES512 (ECDSA using P-521 and SHA-512)")##
-            
-            algorithm_choice = input("Enter the number corresponding to the desired algorithm: ")
+            algorithm_choice = input("Choose desired algorithm: ")
             
             algorithms_mapping = {
                 '1': 'HS256',
                 '2': 'HS384',
                 '3': 'HS512',
-                #'4': 'RS256',
-                #'5': 'RS384',
-                #'6': 'RS512',
-                #'7': 'ES256',
-                #'8': 'ES384',
-                #'9': 'ES512',
+
             }
             
             selected_algorithm = algorithms_mapping.get(algorithm_choice)
             
             if selected_algorithm is None:
-                print("Invalid algorithm choice. Exiting.")
+                print("algorithm choice Invalid . Exiting.")
                 continue
             
             jwt_token = generate_jwt_token(payload, secret_key, algorithm=selected_algorithm)
@@ -209,6 +219,9 @@ def main():
 
         else:
             print("Invalid option. Choose a number between 0 and 7.")
+        continue_option = input("Exit Or Continue? (y/n):  ").lower()
+        if continue_option != 'y':
+            break
 
 if __name__ == "__main__":
     main()
