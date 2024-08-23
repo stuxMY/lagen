@@ -1,5 +1,10 @@
 ## RUN
-python3 lagen.py
+chmod +x lagen.py 
+sudo mv lagen.py lagen && sudo mv lagen /usr/bin/
+
+# OPTIONAL RUN DIRECTLY IN Directory >> ./lagen.py
+
+
 # lagen
 Password Generator and other's thing Generator for lazy pipolllllsssss
 
