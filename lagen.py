@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+required_libraries = [
+    'crypto_tools',
+    'colorama',
+    'fpdf',
+    'smtplib',
+]
+def install_missing_libraries(libraries):
+    for lib in libraries:
+        try:
+            __import__(lib)
+        except ImportError:
+            print(f"Lib '{lib}' not found. Installing == == > > ")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
+install_missing_libraries(required_libraries)
+
 import random
 import string
 import json
