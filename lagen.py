@@ -2,6 +2,11 @@
 import random
 import string
 import json
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from fpdf import FPDF
 from crypto_tools import md5_hash, base64_decode, generate_jwt_token
 from colorama import init, Fore, Back, Style
 
@@ -59,6 +64,45 @@ def save_to_file(filename, content):
     except Exception as e:
         print(f"Error saving to file: {str(e)}")
 
+def export_to_pdf(filename, content):
+    try:
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        for line in content.split("\n"):
+            pdf.cell(200, 10, txt=line, ln=True, align='L')
+        pdf.output(filename)
+        print(f"Exported to PDF file '{filename}' successfully.")
+    except Exception as e:
+        print(f"Error exporting to PDF: {str(e)}")
+
+def send_email(sender_email, recipient_email, subject, content, pdf_filename=None):
+    try:
+        password = input(f"Enter the password for '{sender_email}': ")
+        
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = recipient_email
+        msg['Subject'] = subject
+        
+        msg.attach(MIMEText(content, 'plain'))
+        
+        if pdf_filename:
+            with open(pdf_filename, 'rb') as pdf_file:
+                part = MIMEApplication(pdf_file.read(), _subtype='pdf')
+                part.add_header('Content-Disposition', 'attachment', filename=pdf_filename)
+                msg.attach(part)
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, password)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.quit()
+
+        print(f"Email sent to '{recipient_email}' successfully.")
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
+
 def menu():
     print("""
 🟥⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛
@@ -84,12 +128,16 @@ def menu():
     print("5. MD5 Hash")
     print("6. Base64 decode")
     print("7. Generate JWT token")
+    print("8. Export to PDF")
+    print("9. Email the results")
     print("0. Exit")
 
 def main():
+    generated_content = ""
+
     while True:
         menu()
-        option = input("Choose (0-7): ")
+        option = input("Choose (0-9): ")
 
         if option == '0':
             print("Exit. LOLbye!")
@@ -104,14 +152,14 @@ def main():
             special_characters = input("Special characters? (y/n): ").lower() == 'y'
 
             result = gen_single_password(username, length, uppercase, lowercase, numbers, special_characters)
-            print("\nPassword: ")
             for username, password in result.items():
-                print(f"{username}: {password}")
+                generated_content = f"{username}: {password}"
+                print(f"\nPassword:\n{generated_content}")
 
             save_option = input("Save the password to file? (y/n): ").lower()
             if save_option == 'y':
                 filename = input("Filename to be saved as: ")
-                save_to_file(filename, f"{username}: {password}")
+                save_to_file(filename, generated_content)
 
         elif option == '2':
             source_option = input("Method (1: Manual Entry, 2: File 'usernames.txt'): ")
@@ -132,14 +180,13 @@ def main():
             special_characters = input("Include special characters? (y/n): ").lower() == 'y'
 
             bulk_passwords = generate_bulk_passwords(usernames, length, uppercase, lowercase, numbers, special_characters)
-            print("\nPasswords: ")
-            for username, password in bulk_passwords.items():
-                print(f"{username}: {password}")
+            generated_content = "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()])
+            print(f"\nPasswords:\n{generated_content}")
 
             save_option = input("Save the passwords to a file? (y/n): ").lower()
             if save_option == 'y':
                 filename = input("Filename to be saved as: ")
-                save_to_file(filename, "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()]))
+                save_to_file(filename, generated_content)
 
         elif option == '3':
             length = int(input("Password length: "))
@@ -150,79 +197,61 @@ def main():
 
             try:
                 password = generate_password(length, uppercase, lowercase, numbers, special_characters)
-                print("\nPassword:  ", password)
+                generated_content = f"{password}"
+                print(f"\nPassword:\n{generated_content}")
             except ValueError as e:
-                print("\nError:", e)
+                print(f"Error: {str(e)}")
 
         elif option == '4':
-            num_passwords = int(input("Enter total passwords to generate in bulk: "))
+            usernames_str = input("Comma-separated list of usernames (e.g., user1,user2): ")
+            usernames = [username.strip() for username in usernames_str.split(',')]
             length = int(input("Password length: "))
             uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
             lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
             numbers = input("Include numbers? (y/n): ").lower() == 'y'
             special_characters = input("Include special characters? (y/n): ").lower() == 'y'
 
-            bulk_passwords = generate_bulk_passwords(list(range(1, num_passwords + 1)), length, uppercase, lowercase, numbers, special_characters)
-            print("\nPasswords: ")
-            for username, password in bulk_passwords.items():
-                print(f"{username}: {password}")
+            bulk_passwords = generate_bulk_passwords(usernames, length, uppercase, lowercase, numbers, special_characters)
+            generated_content = "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()])
+            print(f"\nPasswords:\n{generated_content}")
 
-            save_option = input("Save the passwords to a file? (y/n): ").lower()
+            save_option = input("Save the passwords to file? (y/n): ").lower()
             if save_option == 'y':
-                filename = input("Enter the filename: ")
-                save_to_file(filename, "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()]))
+                filename = input("Filename to be saved as: ")
+                save_to_file(filename, generated_content)
 
         elif option == '5':
-            data = input("Enter data for MD5 hashing: ")
-            hashed_data = md5_hash(data)
-            print("\nMD5 Hash:", hashed_data)
+            text = input("Text to be hashed: ")
+            hash_result = md5_hash(text)
+            generated_content = f"MD5 Hash:\n{hash_result}"
+            print(f"\n{generated_content}")
 
         elif option == '6':
-            data = input("Enter data for Base64 decoding: ")
-            decoded_data = base64_decode(data)
-            print("\nBase64 Decoded:", decoded_data)
+            text = input("Base64 text to decode: ")
+            decoded_result = base64_decode(text)
+            generated_content = f"Base64 Decoded:\n{decoded_result}"
+            print(f"\n{generated_content}")
 
         elif option == '7':
-            try:
-                with open('payload.json', 'r') as file:
-                    payload_str = file.read()
-                    payload = json.loads(payload_str)
-            except FileNotFoundError:
-                print("Error: Payload file 'payload.json' not found.")
-                continue
-            except json.JSONDecodeError:
-                print("Error: Invalid JSON format in 'payload.json'.")
-                continue
+            secret = input("Secret key: ")
+            expiration = int(input("Expiration time in seconds (e.g., 3600 for 1 hour): "))
+            jwt_token = generate_jwt_token(secret, expiration)
+            generated_content = f"JWT Token:\n{jwt_token}"
+            print(f"\n{generated_content}")
 
-            secret_key = input("Enter secret key for JWT token: ")
-            
-            print("Choose the signing algorithm:")
-            print("1. HS256 (HMAC using SHA-256)")
-            print("2. HS384 (HMAC using SHA-384)")
-            print("3. HS512 (HMAC using SHA-512)")
-            algorithm_choice = input("Choose desired algorithm: ")
-            
-            algorithms_mapping = {
-                '1': 'HS256',
-                '2': 'HS384',
-                '3': 'HS512',
+        elif option == '8':
+            filename = input("PDF filename: ")
+            export_to_pdf(filename, generated_content)
 
-            }
-            
-            selected_algorithm = algorithms_mapping.get(algorithm_choice)
-            
-            if selected_algorithm is None:
-                print("algorithm choice Invalid . Exiting.")
-                continue
-            
-            jwt_token = generate_jwt_token(payload, secret_key, algorithm=selected_algorithm)
-            print("\nGenerated JWT Token:", jwt_token)
+        elif option == '9':
+            sender_email = input("Sender's Gmail address: ")
+            recipient_email = input("Recipient's email address: ")
+            subject = input("Email subject: ")
+            pdf_filename = input("Attach PDF (filename) or leave blank: ")
+            send_email(sender_email, recipient_email, subject, generated_content, pdf_filename)
 
         else:
-            print("Invalid option. Choose a number between 0 and 7.")
-        continue_option = input("Exit Or Continue? (y/n):  ").lower()
-        if continue_option != 'y':
-            break
+            print("Invalid option. Please try again.")
 
 if __name__ == "__main__":
     main()
