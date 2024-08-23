@@ -15,6 +15,7 @@ If got tooooo mannyyy Username please create usernames.txt
 Please Setup Google Apps Password before use Sent Email functions
 
 # Payloads.json
+Create payload.json file if want to use generate JWT TOKEN
 Used to generate JWT Token
 
 
