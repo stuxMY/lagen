@@ -1,3 +1,13 @@
+
+<div align="center">
+    <a href="https://github.com/stuxMY/lagen">
+        <img src="https://i.ibb.co/3yy6h8j/Gemini-Generated-Image-wvjbmswvjbmswvjb.jpg" alt="Logo" width="300" height="330">
+    </a>
+    <h3>LAGEN - LAZY PASSWORD GENERATOR </h3>
+</div>
+
+![Python Version](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)
+
 # LAGEN - LAZY PASSWORD GENERATOR 🛠️
 
 **LAGEN** (Lazy Password Generator) is a Python script that helps users generate secure, customizable passwords with ease. This all-in-one tool includes features for generating single or bulk passwords, hashing, encoding, and exporting passwords to files and emails.
