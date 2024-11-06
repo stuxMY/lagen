@@ -36,8 +36,8 @@ The script installs the required libraries automatically if they're missing. The
 
 Clone this repository:
 
-   git clone https://github.com/yourusername/LAGEN-LazyPasswordGenerator.git
-   cd LAGEN-LazyPasswordGenerator
+   git clone https://github.com/stuxMY/lagen.git
+   cd lagen
     Ensure Python 3 is installed on your system.
 
     Run the script, which will check for missing dependencies and install them if necessary.
