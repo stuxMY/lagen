@@ -33,40 +33,36 @@ Clone this repository:
     Run the script, which will check for missing dependencies and install them if necessary.
 
 Usage
-
 Run the script using:
-
 python3 lagen.py
 
 Follow the on-screen menu for available options:
 
-    Generate a single password for a username
-    Generate bulk passwords for a list of usernames
-    Generate a single password without a username
-    Generate bulk passwords without usernames
-    MD5 hash a string
-    Decode Base64 text
-    Generate a JWT token
-    Export generated content to PDF
-    Send results via email
-    Exit
+   1. Generate a single password for a username
+   2. Generate bulk passwords for a list of usernames
+   3. Generate a single password without a username
+   4. Generate bulk passwords without usernames
+   5. MD5 hash a string
+   6. Decode Base64 text
+   7. Generate a JWT token
+   8. Export generated content to PDF
+   9. Send results via email
+   0. Exit
 
 Sample Commands
+1. Single Password Generation
+   Enter username and customize the password parameters (length, uppercase, lowercase, numbers, special characters).
 
-    Single Password Generation
-        Enter username and customize the password parameters (length, uppercase, lowercase, numbers, special characters).
+2. Bulk Password Generation
+   Choose between manual username entry or file input, and customize password parameters.
 
-    Bulk Password Generation
-        Choose between manual username entry or file input, and customize password parameters.
+3. Exporting
+   Use option 8 to export generated content as a PDF file.
 
-    Exporting
-        Use option 8 to export generated content as a PDF file.
-
-    Sending Email
-        Send results via email with an optional PDF attachment using option 9.
+4. Sending Email
+   Send results via email with an optional PDF attachment using option 9.
 
 Example
-
 To generate and export bulk passwords for a list of usernames:
 
     Choose option 2 in the menu.
