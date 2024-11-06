@@ -11,6 +11,14 @@
 # LAGEN - LAZY PASSWORD GENERATOR 🛠️
 
 **LAGEN** (Lazy Password Generator) is a Python script that helps users generate secure, customizable passwords with ease. This all-in-one tool includes features for generating single or bulk passwords, hashing, encoding, and exporting passwords to files and emails.
+
+**IMPORTANT** 
+# Gmail 
+Please Setup Google Apps Password before use Sent Email functions
+
+# Payloads.json
+Create payload.json file if want to use generate JWT TOKEN
+
    ```python
 ## Features
 
