@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
-required_libraries = [
-    'crypto_tools',
-    'colorama',
-    'fpdf',
-    'smtplib',
-]
-def install_missing_libraries(libraries):
-    for lib in libraries:
-        try:
-            __import__(lib)
-        except ImportError:
-            print(f"Lib '{lib}' not found. Installing == == > > ")
-            subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
-install_missing_libraries(required_libraries)
-
+import os
+import subprocess
+import sys
+import configparser
 import random
 import string
 import json
@@ -24,6 +13,40 @@ from email.mime.application import MIMEApplication
 from fpdf import FPDF
 from crypto_tools import md5_hash, base64_decode, generate_jwt_token
 from colorama import init, Fore, Back, Style
+
+required_libraries = [
+    'crypto_tools',
+    'colorama',
+    'fpdf',
+    'smtplib',
+]
+
+def install_missing_libraries(libraries):
+    for lib in libraries:
+        try:
+            __import__(lib)
+        except ImportError:
+            print(f"Lib '{lib}' not found. Installing == == > > ")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
+
+install_missing_libraries(required_libraries)
+
+def load_email_credentials():
+    config = configparser.ConfigParser()
+
+    if not os.path.exists("email.conf"):
+        print("Email configuration file 'email.conf' not found.")
+        print("Please create the file 'email.conf' with your email and password.")
+        return None, None
+    
+    config.read('email.conf')
+    try:
+        email = config.get('smtp', 'email')
+        password = config.get('smtp', 'password')
+        return email, password
+    except Exception as e:
+        print(f"Error reading 'email.conf': {e}")
+        return None, None
 
 def generate_password(length=12, uppercase=True, lowercase=True, numbers=True, special_characters=True):
     characters = ''
@@ -93,7 +116,7 @@ def export_to_pdf(filename, content):
 
 def send_email(sender_email, recipient_email, subject, content, pdf_filename=None):
     try:
-        password = input(f"Enter the password for '{sender_email}': ")
+        password = input(f"Enter the password for '{sender_email}': ") if not sender_email or not password else password
         
         msg = MIMEMultipart()
         msg['From'] = sender_email
@@ -158,115 +181,15 @@ def main():
             print("Exit. LOLbye!")
             break
 
-        elif option == '1':
-            username = input("Username: ")
-            length = int(input("Password length: "))
-            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
-            numbers = input("Include numbers? (y/n): ").lower() == 'y'
-            special_characters = input("Special characters? (y/n): ").lower() == 'y'
-
-            result = gen_single_password(username, length, uppercase, lowercase, numbers, special_characters)
-            for username, password in result.items():
-                generated_content = f"{username}: {password}"
-                print(f"\nPassword:\n{generated_content}")
-
-            save_option = input("Save the password to file? (y/n): ").lower()
-            if save_option == 'y':
-                filename = input("Filename to be saved as: ")
-                save_to_file(filename, generated_content)
-
-        elif option == '2':
-            source_option = input("Method (1: Manual Entry, 2: File 'usernames.txt'): ")
-            
-            if source_option == '1':
-                usernames_str = input("Comma-separated list of usernames (e.g., user1,user2): ")
-                usernames = [username.strip() for username in usernames_str.split(',')]
-            elif source_option == '2':
-                usernames = usernames_from_file('usernames.txt')
-            else:
-                print("source option invalid . choose 1 or 2.")
+        elif option == '9':
+            sender_email, password = load_email_credentials()
+            if sender_email is None or password is None:
                 continue
 
-            length = int(input("Password length: "))
-            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
-            numbers = input("Include numbers? (y/n): ").lower() == 'n'
-            special_characters = input("Include special characters? (y/n): ").lower() == 'y'
-
-            bulk_passwords = generate_bulk_passwords(usernames, length, uppercase, lowercase, numbers, special_characters)
-            generated_content = "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()])
-            print(f"\nPasswords:\n{generated_content}")
-
-            save_option = input("Save the passwords to a file? (y/n): ").lower()
-            if save_option == 'y':
-                filename = input("Filename to be saved as: ")
-                save_to_file(filename, generated_content)
-
-        elif option == '3':
-            length = int(input("Password length: "))
-            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
-            numbers = input("Include numbers? (y/n): ").lower() == 'y'
-            special_characters = input("Include special characters? (y/n): ").lower() == 'y'
-
-            try:
-                password = generate_password(length, uppercase, lowercase, numbers, special_characters)
-                generated_content = f"{password}"
-                print(f"\nPassword:\n{generated_content}")
-            except ValueError as e:
-                print(f"Error: {str(e)}")
-
-        elif option == '4':
-            usernames_str = input("Comma-separated list of usernames (e.g., user1,user2): ")
-            usernames = [username.strip() for username in usernames_str.split(',')]
-            length = int(input("Password length: "))
-            uppercase = input("Uppercase letters? (y/n): ").lower() == 'y'
-            lowercase = input("Lowercase letters? (y/n): ").lower() == 'y'
-            numbers = input("Include numbers? (y/n): ").lower() == 'y'
-            special_characters = input("Include special characters? (y/n): ").lower() == 'y'
-
-            bulk_passwords = generate_bulk_passwords(usernames, length, uppercase, lowercase, numbers, special_characters)
-            generated_content = "\n".join([f"{username}: {password}" for username, password in bulk_passwords.items()])
-            print(f"\nPasswords:\n{generated_content}")
-
-            save_option = input("Save the passwords to file? (y/n): ").lower()
-            if save_option == 'y':
-                filename = input("Filename to be saved as: ")
-                save_to_file(filename, generated_content)
-
-        elif option == '5':
-            text = input("Text to be hashed: ")
-            hash_result = md5_hash(text)
-            generated_content = f"MD5 Hash:\n{hash_result}"
-            print(f"\n{generated_content}")
-
-        elif option == '6':
-            text = input("Base64 text to decode: ")
-            decoded_result = base64_decode(text)
-            generated_content = f"Base64 Decoded:\n{decoded_result}"
-            print(f"\n{generated_content}")
-
-        elif option == '7':
-            secret = input("Secret key: ")
-            expiration = int(input("Expiration time in seconds (e.g., 3600 for 1 hour): "))
-            jwt_token = generate_jwt_token(secret, expiration)
-            generated_content = f"JWT Token:\n{jwt_token}"
-            print(f"\n{generated_content}")
-
-        elif option == '8':
-            filename = input("PDF filename: ")
-            export_to_pdf(filename, generated_content)
-
-        elif option == '9':
-            sender_email = input("Sender's Gmail address: ")
-            recipient_email = input("Recipient's email address: ")
+            recipient_email = input("Recipient email address: ")
             subject = input("Email subject: ")
             pdf_filename = input("Attach PDF (filename) or leave blank: ")
             send_email(sender_email, recipient_email, subject, generated_content, pdf_filename)
-
-        else:
-            print("Invalid option. Please try again.")
 
 if __name__ == "__main__":
     main()
