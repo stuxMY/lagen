@@ -186,7 +186,7 @@ def main():
             if sender_email is None or password is None:
                 continue
 
-            recipient_email = input("Recipient email address: ")
+            recipient_email = input("Recipien email address: ")
             subject = input("Email subject: ")
             pdf_filename = input("Attach PDF (filename) or leave blank: ")
             send_email(sender_email, recipient_email, subject, generated_content, pdf_filename)
